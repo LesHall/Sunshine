@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////
 // 
-// Elizabeth simage to SCAD converter
+// Sunshine image to SCAD converter
 // one step toward an image to stl editor
 // by Les Hall
 // 
@@ -8,17 +8,17 @@
 
 
 int d = 1;  // pixels averaged in a square, set to 1 for no decimation
-float diameter = 100;  // (mm)
-float depth = 2; // (mm)
+float diameter = 100;  // diameter of sphere (mm)
+float depth = 2; // additional height of features (mm)
 String inFilename = "";  // input image filename
 String outFilename = "";  // output filename of chosen output file format
-PImage img;
-String SCADdata[] = {"polyhedron(points = [ "};
-boolean imageLoaded = false;
-boolean imageDrawn = false;
-boolean fileSaved = false;
-int messageSize = 40;
-float scale = 1;
+PImage img;  // holds the input image
+String SCADdata[] = {"polyhedron(points = [ "};  // holds the polygon text
+boolean imageLoaded = false;  // true after the image loads
+boolean imageDrawn = false;  // true after the image is drawn
+boolean fileSaved = false;  // true after the file is saved
+int messageSize = 40;  // text height in pixels
+float scale = 1;  // resizing fraction of image
 
 
 void setup() {
@@ -51,7 +51,7 @@ void draw() {
       scale = ((float)height)/img.height;
     
     // draw the screen
-    draw_screen("Waiting for file to process\nClick to exit after processing");
+    draw_screen("Waiting for file to process\nClick to exit after waiting");
 
     // process the image on the next frame
     // so the drawn image registers on screen
@@ -151,11 +151,8 @@ void process_image() {
   SCADdata = append(SCADdata, join(points, "") );
   SCADdata = append(SCADdata, "],  convexity = 10);");
   
-  
   // save and exit
-  //String[] parts = splitTokens(inFilename, ".");
-  //parts[parts.length-1] = "scad";
-  outFilename = inFilename + ".SCAD";
+  outFilename = inFilename + ".scad";
   saveStrings(outFilename, SCADdata);
   fileSaved = true;
 }
