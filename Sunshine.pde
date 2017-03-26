@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////
 // 
-// Sunshine image to SCAD converter
+// Elizabeth simage to SCAD converter
 // one step toward an image to stl editor
 // by Les Hall
 // 
@@ -10,15 +10,23 @@
 int d = 1;  // pixels averaged in a square, set to 1 for no decimation
 float diameter = 100;  // (mm)
 float depth = 2; // (mm)
-String filename = "Earth.png";  // input image file
+String inFilename = "";  // input image filename
+String outFilename = "";  // output filename of chosen output file format
 PImage img;
 String SCADdata[] = {"polyhedron(points = [ "};
 boolean imageLoaded = false;
 boolean imageDrawn = false;
+boolean fileSaved = false;
+int messageSize = 40;
+float scale = 1;
 
 
 void setup() {
-  size(800, 600, P2D);
+  size(800, 600);
+  
+  textSize(messageSize);
+  textAlign(CENTER, CENTER);
+
   selectInput("Select a file to process:", "fileSelected");
 }
 
@@ -26,22 +34,47 @@ void setup() {
 
 void draw() {
 
-  background(0, 255, 255);
-
-  if (imageDrawn) {
-    // convert image to SCAD file
+  if (imageDrawn && (!fileSaved)) {
+    
+    // convert the image to an SCAD file
     process_image();
+    
+    // draw the complete message
+    draw_screen("\nClick to exit");
   }
-
+  
   if (imageLoaded) {
-    // draw the image
-    image(img, width, height);
+    
+    // calculate the scale of the image
+    scale = ((float)width)/img.width;
+    if (scale > (((float)height)/img.height) )
+      scale = ((float)height)/img.height;
+    
+    // draw the screen
+    draw_screen("Waiting for file to process\nClick to exit after processing");
 
     // process the image on the next frame
     // so the drawn image registers on screen
+    imageLoaded = false;
     imageDrawn = true;
   }
 }
+
+
+
+void draw_screen(String message) {
+  
+  background(0, 255/2, 255);
+  image(img, 0, 0, scale*img.width, scale*img.height);
+  text(message, width/2, height - 2*messageSize);
+}
+
+
+
+void mouseReleased() {
+  exit();
+}
+
 
 
 // convert image to SCAD file
@@ -120,18 +153,26 @@ void process_image() {
   
   
   // save and exit
-  saveStrings("output.scad", SCADdata);
-  exit();
+  //String[] parts = splitTokens(inFilename, ".");
+  //parts[parts.length-1] = "scad";
+  outFilename = inFilename + ".SCAD";
+  saveStrings(outFilename, SCADdata);
+  fileSaved = true;
 }
 
 
 
 void fileSelected(File selection) {
+  
   if (selection == null) {
+    
     println("Window was closed or the user hit cancel.");
+  
   } else {
-    println("User selected " + selection.getAbsolutePath());
-    img = loadImage(selection.getAbsolutePath());  // get image from disk
+    
+    inFilename = selection.getAbsolutePath();
+    println("User selected " + inFilename);
+    img = loadImage(inFilename);  // get image from disk
     img.loadPixels(); // load pixels from image to PImage
     imageLoaded = true;
   }
